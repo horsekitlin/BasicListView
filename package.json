@@ -8,5 +8,6 @@
   "dependencies": {
     "lodash": "^4.17.4",
     "react-native-sglistview": "^0.3.10"
-  }
+  },
+  "repository": "git@github.com:horsekitlin/BasicListView.git"
 }
