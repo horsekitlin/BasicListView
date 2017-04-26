@@ -4,53 +4,28 @@
 
 import React, { PropTypes } from 'react';
 import {
-   ListView,
-   RefreshControl,
-   View,
-   Text,
- } from 'react-native';
-
-import SGListView from 'react-native-sglistview';
+    RefreshControl,
+    VirtualizedList,
+} from 'react-native';
 import _ from 'lodash';
 
 const Immutable = require('immutable');
 
-const dataSource = new ListView.DataSource({
-    rowHasChanged: (r1, r2) => !Immutable.is(r1, r2),
-    getRowData: (dataBlob, sectionID, rowID) => { return dataBlob[sectionID].get(rowID); }
-});
-
-export default class BasicListView extends React.Component{
+export default class BasicListView extends React.PureComponent {
     static propTypes = {
         //dataSource: PropTypes.instanceOf(Immutable.List).isRequired,
         loadMore: PropTypes.func.isRequired,
         refresh: PropTypes.func.isRequired,
         isRefreshing: PropTypes.bool.isRequired,
         renderRow: PropTypes.func.isRequired,
-        pageSize: PropTypes.number,
-        initialListSize: PropTypes.number,
-        stickyHeaderIndices: PropTypes.array,
+        windowSize: PropTypes.number,
         onEndReachedThreshold: PropTypes.number,
-        renderSectionHeader: PropTypes.func,
-        renderFooter : PropTypes.func,
     };
 
     static defaultProps = {
-        pageSize: 30,
-        initialListSize: -1,
-        stickyHeaderIndices: [],
-        scrollRenderAheadDistance: 0,
-        onEndReachedThreshold: 0,
+        onEndReachedThreshold: 2,
     };
 
-    constructor(props){
-        super(props);
-        this._getDataSource = new ListView.DataSource({
-          rowHasChanged: (r1, r2) => !Immutable.is(r1, r2),
-          getRowData: (dataBlob, sectionID, rowID) => { return dataBlob[sectionID].get(rowID); }
-        });
-
-    }
     getContent = () => {
         const {
             dataSource,
@@ -65,39 +40,47 @@ export default class BasicListView extends React.Component{
             this.props.loadMore();
         }
     }
-    render(){
+    _getItem = (data: Immutable.Map, index: number) => {
+        return data.get(index);
+    }
+
+    _getItemCount = (data: Immutable.Map) => {
+        return data.size;
+    }
+
+    _keyExtractor = (data: Immutable.Map, index: number) => {
+        const key = this.props.keyExtractor(data, index);
+        return key;
+    }
+    render() {
         const {
-            pageSize,
-            initialListSize,
-            stickyHeaderIndices,
-            scrollRenderAheadDistance,
+            dataSource,
             onEndReachedThreshold,
+            windowSize,
+            isRefreshing,
+            refresh,
+            loadMore,
+            renderRow,
         } = this.props;
         return (
-            <SGListView
-                style={{flex: 1}}    
-               refreshControl={
-                   <RefreshControl
-                       onRefresh={this.refresh}
-                       refreshing={this.props.isRefreshing} />
-               }
-               enableEmptySections={true}
-               pageSize={pageSize} 
-               renderSectionHeader={this.props.renderSectionHeader}
-               initialListSize={initialListSize}
-               renderFooter={this.props.renderFooter}
-               stickyHeaderIndices={stickyHeaderIndices}
-               onEndReachedThreshold={onEndReachedThreshold}
-               onEndReached={this.loadMore}
-               style={this.props.style}
-               scrollRenderAheadDistance={scrollRenderAheadDistance}
-               renderRow={this.props.renderRow}
-               dataSource={this.getContent()} />
+            <VirtualizedList
+                style={{ flex: 1 }}
+                onRefresh={refresh}
+                onEndReachedThreshold={onEndReachedThreshold}
+                onEndReached={loadMore}
+                getItem={this._getItem}
+                refreshing={isRefreshing}
+                getItemCount={this._getItemCount}
+                keyExtractor={this._keyExtractor}
+                renderItem={renderRow}
+                data={dataSource}
+                windowSize={windowSize}
+            />
         );
     }
 
     refresh = () => {
-        if(_.isFunction(this.props.refresh)){
+        if (_.isFunction(this.props.refresh)) {
             this.props.refresh();
         }
     }

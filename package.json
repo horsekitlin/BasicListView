@@ -1,13 +1,12 @@
 {
-  "name": "BasicListView",
-  "version": "1.0.0",
+  "name": "react-native-basiclistview",
+  "version": "1.1.0",
   "description": "React Native Basic View",
   "main": "index.js",
   "author": "Tomas",
   "license": "MIT",
   "dependencies": {
-    "lodash": "^4.17.4",
-    "react-native-sglistview": "^0.3.10"
+    "lodash": "^4.17.4"
   },
   "repository": "git@github.com:horsekitlin/BasicListView.git"
 }
